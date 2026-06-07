@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "id": "wheelboat",
+  "version": "${version}",
+  "name": "Wheelboat",
+  "description": "Control vanilla boats with a physical steering wheel and pedals.",
+  "authors": [
+    "ArikSquad"
+  ],
+  "license": "MIT",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "eu.mikart.wheelboat.WheelboatClient"
+    ]
+  },
+  "mixins": [
+    {
+      "config": "wheelboat.client.mixins.json",
+      "environment": "client"
+    }
+  ],
+  "depends": {
+    "fabricloader": ">=0.19.3",
+    "minecraft": "~26.1.2",
+    "java": ">=25"
+  }
+}
