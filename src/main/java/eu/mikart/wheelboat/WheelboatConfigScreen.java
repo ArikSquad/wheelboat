@@ -81,6 +81,14 @@ final class WheelboatConfigScreen {
             .setDefaultValue(false)
             .setSaveConsumer(value -> config.invertCombinedPedals = value)
             .build());
+        category.addEntry(entries.startBooleanToggle(Component.literal("Invert accelerator"), config.invertAccelerator)
+            .setDefaultValue(true)
+            .setSaveConsumer(value -> config.invertAccelerator = value)
+            .build());
+        category.addEntry(entries.startBooleanToggle(Component.literal("Invert brake"), config.invertBrake)
+            .setDefaultValue(false)
+            .setSaveConsumer(value -> config.invertBrake = value)
+            .build());
         category.addEntry(floatEntry(entries, "Combined accelerator value", config.combinedPedalsAcceleratorValue, -1.0F, -1.0F, 1.0F, value -> config.combinedPedalsAcceleratorValue = value));
         category.addEntry(floatEntry(entries, "Combined resting value", config.combinedPedalsRestingValue, 0.0F, -1.0F, 1.0F, value -> config.combinedPedalsRestingValue = value));
         category.addEntry(floatEntry(entries, "Combined brake value", config.combinedPedalsBrakeValue, 1.0F, -1.0F, 1.0F, value -> config.combinedPedalsBrakeValue = value));
@@ -112,7 +120,7 @@ final class WheelboatConfigScreen {
         addMaterialProfile(category, entries, "Water", config.waterForceFeedback, 1.0F, 0.04F);
         addMaterialProfile(category, entries, "Ice", config.iceForceFeedback, 0.55F, 0.01F);
         addMaterialProfile(category, entries, "Sand", config.sandForceFeedback, 1.2F, 0.45F);
-        addMaterialProfile(category, entries, "Dirt", config.dirtForceFeedback, 1.0F, 0.28F);
+        addMaterialProfile(category, entries, "Dirt", config.dirtForceFeedback, 1.0F, 0.5F);
         addMaterialProfile(category, entries, "Stone", config.stoneForceFeedback, 1.35F, 0.35F);
         addMaterialProfile(category, entries, "Wood", config.woodForceFeedback, 0.9F, 0.18F);
         addMaterialProfile(category, entries, "Default", config.defaultForceFeedback, 1.0F, 0.15F);

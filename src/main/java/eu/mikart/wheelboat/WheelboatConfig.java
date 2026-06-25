@@ -24,7 +24,7 @@ public final class WheelboatConfig {
     float combinedPedalsBrakeValue = 1.0F;
 
     int acceleratorAxis = 2;
-    boolean invertAccelerator;
+    boolean invertAccelerator = true;
     float acceleratorRestingValue = -1.0F;
     float acceleratorPressedValue = 1.0F;
     float acceleratorThreshold = 0.1F;
@@ -41,7 +41,7 @@ public final class WheelboatConfig {
     MaterialForceFeedback waterForceFeedback = new MaterialForceFeedback(1.0F, 0.04F);
     MaterialForceFeedback iceForceFeedback = new MaterialForceFeedback(0.55F, 0.01F);
     MaterialForceFeedback sandForceFeedback = new MaterialForceFeedback(1.2F, 0.45F);
-    MaterialForceFeedback dirtForceFeedback = new MaterialForceFeedback(1.0F, 0.28F);
+    MaterialForceFeedback dirtForceFeedback = new MaterialForceFeedback(1.0F, 0.5F);
     MaterialForceFeedback stoneForceFeedback = new MaterialForceFeedback(1.35F, 0.35F);
     MaterialForceFeedback woodForceFeedback = new MaterialForceFeedback(0.9F, 0.18F);
     MaterialForceFeedback defaultForceFeedback = new MaterialForceFeedback(1.0F, 0.15F);
@@ -63,7 +63,7 @@ public final class WheelboatConfig {
         waterForceFeedback = sanitizeProfile(waterForceFeedback, 1.0F, 0.04F);
         iceForceFeedback = sanitizeProfile(iceForceFeedback, 0.55F, 0.01F);
         sandForceFeedback = sanitizeProfile(sandForceFeedback, 1.2F, 0.45F);
-        dirtForceFeedback = sanitizeProfile(dirtForceFeedback, 1.0F, 0.28F);
+        dirtForceFeedback = sanitizeProfile(dirtForceFeedback, 1.0F, 0.5F);
         stoneForceFeedback = sanitizeProfile(stoneForceFeedback, 1.35F, 0.35F);
         woodForceFeedback = sanitizeProfile(woodForceFeedback, 0.9F, 0.18F);
         defaultForceFeedback = sanitizeProfile(defaultForceFeedback, 1.0F, 0.15F);
