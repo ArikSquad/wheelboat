@@ -12,6 +12,9 @@
   "entrypoints": {
     "client": [
       "eu.mikart.wheelboat.WheelboatClient"
+    ],
+    "modmenu": [
+      "eu.mikart.wheelboat.WheelboatModMenuIntegration"
     ]
   },
   "mixins": [
@@ -23,6 +26,10 @@
   "depends": {
     "fabricloader": ">=0.19.3",
     "minecraft": "~26.1.2",
-    "java": ">=25"
+    "java": ">=25",
+    "cloth-config": ">=26.1.154"
+  },
+  "recommends": {
+    "modmenu": ">=18.0.0-alpha.8"
   }
 }

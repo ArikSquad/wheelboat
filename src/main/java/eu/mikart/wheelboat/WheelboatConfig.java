@@ -10,8 +10,8 @@ import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-final class WheelboatConfig {
-    private static final int CURRENT_VERSION = 4;
+public final class WheelboatConfig {
+    private static final int CURRENT_VERSION = 5;
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static final Path PATH = FabricLoader.getInstance().getConfigDir().resolve("wheelboat.json");
 
@@ -51,11 +51,18 @@ final class WheelboatConfig {
     boolean forceFeedback = true;
     String forceFeedbackDevice = "";
     float forceFeedbackStrength = 0.25F;
+    MaterialForceFeedback waterForceFeedback = new MaterialForceFeedback(1.0F, 0.04F);
+    MaterialForceFeedback iceForceFeedback = new MaterialForceFeedback(0.55F, 0.01F);
+    MaterialForceFeedback sandForceFeedback = new MaterialForceFeedback(1.2F, 0.45F);
+    MaterialForceFeedback dirtForceFeedback = new MaterialForceFeedback(1.0F, 0.28F);
+    MaterialForceFeedback stoneForceFeedback = new MaterialForceFeedback(1.35F, 0.35F);
+    MaterialForceFeedback woodForceFeedback = new MaterialForceFeedback(0.9F, 0.18F);
+    MaterialForceFeedback defaultForceFeedback = new MaterialForceFeedback(1.0F, 0.15F);
 
     private transient long lastModified;
     private transient long nextReloadCheck;
 
-    static WheelboatConfig load() {
+    public static WheelboatConfig load() {
         try {
             Files.createDirectories(PATH.getParent());
             if (!Files.exists(PATH)) {
@@ -99,7 +106,7 @@ final class WheelboatConfig {
         }
     }
 
-    private void save() throws IOException {
+    public void save() throws IOException {
         sanitize();
         try (Writer writer = Files.newBufferedWriter(PATH)) {
             GSON.toJson(this, writer);
@@ -112,6 +119,13 @@ final class WheelboatConfig {
         acceleratorThreshold = Math.clamp(acceleratorThreshold, 0.0F, 1.0F);
         brakeThreshold = Math.clamp(brakeThreshold, 0.0F, 1.0F);
         forceFeedbackStrength = Math.clamp(forceFeedbackStrength, 0.0F, 1.0F);
+        waterForceFeedback = sanitizeProfile(waterForceFeedback, 1.0F, 0.04F);
+        iceForceFeedback = sanitizeProfile(iceForceFeedback, 0.55F, 0.01F);
+        sandForceFeedback = sanitizeProfile(sandForceFeedback, 1.2F, 0.45F);
+        dirtForceFeedback = sanitizeProfile(dirtForceFeedback, 1.0F, 0.28F);
+        stoneForceFeedback = sanitizeProfile(stoneForceFeedback, 1.35F, 0.35F);
+        woodForceFeedback = sanitizeProfile(woodForceFeedback, 0.9F, 0.18F);
+        defaultForceFeedback = sanitizeProfile(defaultForceFeedback, 1.0F, 0.15F);
         if (deviceNameContains == null) {
             deviceNameContains = "";
         }
@@ -127,5 +141,25 @@ final class WheelboatConfig {
 
         configVersion = CURRENT_VERSION;
         return true;
+    }
+
+    MaterialForceFeedback forceFeedbackFor(SurfaceMaterial material) {
+        return switch (material) {
+            case WATER -> waterForceFeedback;
+            case ICE -> iceForceFeedback;
+            case SAND -> sandForceFeedback;
+            case DIRT -> dirtForceFeedback;
+            case STONE -> stoneForceFeedback;
+            case WOOD -> woodForceFeedback;
+            case DEFAULT -> defaultForceFeedback;
+        };
+    }
+
+    private static MaterialForceFeedback sanitizeProfile(MaterialForceFeedback profile, float springMultiplier, float roughness) {
+        if (profile == null) {
+            profile = new MaterialForceFeedback(springMultiplier, roughness);
+        }
+        profile.sanitize();
+        return profile;
     }
 }

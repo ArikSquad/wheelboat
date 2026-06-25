@@ -12,11 +12,17 @@ base {
 }
 
 repositories {
+    maven("https://maven.shedaniel.me/")
+    maven("https://maven.terraformersmc.com/releases/")
 }
 
 dependencies {
     minecraft("com.mojang:minecraft:26.1.2")
     implementation("net.fabricmc:fabric-loader:0.19.3")
+    implementation("me.shedaniel.cloth:cloth-config-fabric:26.1.154") {
+        exclude(group = "net.fabricmc.fabric-api")
+    }
+    implementation("com.terraformersmc:modmenu:18.0.0-alpha.8")
 }
 
 tasks.processResources {

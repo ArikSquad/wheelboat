@@ -3,6 +3,7 @@ package eu.mikart.wheelboat;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.player.Input;
 import net.minecraft.world.entity.vehicle.boat.AbstractBoat;
+import org.jetbrains.annotations.NotNull;
 import org.lwjgl.glfw.GLFW;
 
 import java.nio.FloatBuffer;
@@ -13,7 +14,7 @@ public final class WheelController {
     private static final WheelController INSTANCE = new WheelController();
 
     private WheelboatConfig config = WheelboatConfig.load();
-    private final LinuxForceFeedback forceFeedback = new LinuxForceFeedback();
+    private final ForceFeedbackManager forceFeedback = new ForceFeedbackManager();
     private int selectedJoystick = -1;
     private int scanCooldown;
     private long nextAxisLog;
@@ -69,7 +70,7 @@ public final class WheelController {
         brakeScale = !config.analogInput || keyboardInput.backward() ? 1.0F : brake;
         logAxesIfEnabled(axes);
 
-        forceFeedback.update(config.forceFeedback, config.forceFeedbackDevice, config.forceFeedbackStrength);
+        updateForceFeedback(client);
 
         boolean wheelLeft = steering < -config.steeringDeadzone;
         boolean wheelRight = steering > config.steeringDeadzone;
@@ -79,7 +80,7 @@ public final class WheelController {
         return new Input(keyboardInput.forward() || wheelForward, keyboardInput.backward() || wheelBackward, keyboardInput.left() || wheelLeft, keyboardInput.right() || wheelRight, keyboardInput.jump(), keyboardInput.shift(), keyboardInput.sprint());
     }
 
-    private void updateAnalogValues(FloatBuffer axes) {
+    private void updateAnalogValues(final FloatBuffer axes) {
         float rawSteering = readAxis(axes, config.steeringAxis);
         float center = config.autoCenterSteering && hasCapturedSteeringCenter ? capturedSteeringCenter : config.steeringCenter;
         steering = normalizeSteering(rawSteering, config.steeringMinimum, center, config.steeringMaximum);
@@ -130,12 +131,7 @@ public final class WheelController {
         scanCooldown = DEVICE_SCAN_INTERVAL_TICKS;
 
         boolean preferWheelName = config.joystickId < 0 && config.deviceNameContains.isBlank();
-        FloatBuffer axes = findAxes(preferWheelName);
-        if (axes == null && preferWheelName) {
-            axes = findAxes(false);
-        }
-
-        return axes;
+        return findAxes(preferWheelName);
     }
 
     private FloatBuffer findAxes(boolean requireWheelName) {
@@ -169,7 +165,7 @@ public final class WheelController {
         return config.deviceNameContains.isBlank() || (name != null && name.toLowerCase(Locale.ROOT).contains(config.deviceNameContains.toLowerCase(Locale.ROOT)));
     }
 
-    private static boolean isLikelyWheel(String name) {
+    private static boolean isLikelyWheel(final @NotNull String name) {
         if (name == null) {
             return false;
         }
@@ -186,11 +182,24 @@ public final class WheelController {
         steeringScale = 1.0F;
         acceleratorScale = 1.0F;
         brakeScale = 1.0F;
-        forceFeedback.update(false, config.forceFeedbackDevice, 0.0F);
+        forceFeedback.update(new ForceFeedbackRequest(false, config.forceFeedbackDevice, 0.0F, 0.0F));
     }
 
     private static boolean isDrivingBoat(Minecraft client) {
         return client.player != null && client.screen == null && client.player.getVehicle() instanceof AbstractBoat boat && boat.getControllingPassenger() == client.player;
+    }
+
+    private void updateForceFeedback(Minecraft client) {
+        if (!config.forceFeedback || client.player == null || !(client.player.getVehicle() instanceof AbstractBoat boat)) {
+            forceFeedback.update(new ForceFeedbackRequest(false, config.forceFeedbackDevice, 0.0F, 0.0F));
+            return;
+        }
+
+        SurfaceMaterial material = SurfaceMaterial.under(boat);
+        MaterialForceFeedback materialFeedback = config.forceFeedbackFor(material);
+        float spring = config.forceFeedbackStrength * materialFeedback.springMultiplier;
+        float roughness = config.forceFeedbackStrength * materialFeedback.roughness * Math.max(accelerator, brake);
+        forceFeedback.update(new ForceFeedbackRequest(true, config.forceFeedbackDevice, spring, roughness));
     }
 
     private static float readAxis(FloatBuffer axes, int index) {
