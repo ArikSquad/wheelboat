@@ -10,9 +10,9 @@ This mod has been tested with a G923 under Linux. Windows wheel input is
 supported through GLFW and Windows force feedback is implemented through
 DirectInput.
 
-Force feedback can vary by the material under the boat. The JSON config and the
-optional Cloth Config screen expose spring multiplier and roughness values for
-water, ice, sand, dirt, stone, wood, and a default fallback.
+Force feedback can vary by the material under the boat. The Cloth Config screen
+exposes spring multiplier and roughness values for water, ice, sand, dirt,
+stone, wood, and a default fallback.
 
 ## Build
 

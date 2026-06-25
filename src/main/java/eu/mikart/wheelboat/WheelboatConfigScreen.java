@@ -13,11 +13,11 @@ final class WheelboatConfigScreen {
     }
 
     static Screen create(Screen parent) {
-        WheelboatConfig config = WheelboatConfig.load();
+        WheelboatConfig config = WheelboatConfig.current();
         ConfigBuilder builder = ConfigBuilder.create()
             .setParentScreen(parent)
             .setTitle(Component.literal("Wheelboat"))
-            .setSavingRunnable(() -> save(config));
+            .setSavingRunnable(config::applyChanges);
         ConfigEntryBuilder entries = builder.entryBuilder();
 
         addGeneral(builder.getOrCreateCategory(Component.literal("General")), entries, config);
@@ -134,11 +134,4 @@ final class WheelboatConfigScreen {
             .build();
     }
 
-    private static void save(WheelboatConfig config) {
-        try {
-            config.save();
-        } catch (Exception exception) {
-            WheelboatClient.LOGGER.error("Could not save steering wheel configuration", exception);
-        }
-    }
 }

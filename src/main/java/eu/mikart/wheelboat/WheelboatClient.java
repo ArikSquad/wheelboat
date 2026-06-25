@@ -10,6 +10,5 @@ public final class WheelboatClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        WheelController.initialize();
     }
 }

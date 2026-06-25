@@ -1,21 +1,8 @@
 package eu.mikart.wheelboat;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import net.fabricmc.loader.api.FabricLoader;
-
-import java.io.IOException;
-import java.io.Reader;
-import java.io.Writer;
-import java.nio.file.Files;
-import java.nio.file.Path;
-
 public final class WheelboatConfig {
-    private static final int CURRENT_VERSION = 5;
-    private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-    private static final Path PATH = FabricLoader.getInstance().getConfigDir().resolve("wheelboat.json");
+    private static final WheelboatConfig INSTANCE = new WheelboatConfig();
 
-    int configVersion;
     boolean enabled = true;
     int joystickId = -1;
     String deviceNameContains = "";
@@ -59,59 +46,13 @@ public final class WheelboatConfig {
     MaterialForceFeedback woodForceFeedback = new MaterialForceFeedback(0.9F, 0.18F);
     MaterialForceFeedback defaultForceFeedback = new MaterialForceFeedback(1.0F, 0.15F);
 
-    private transient long lastModified;
-    private transient long nextReloadCheck;
-
-    public static WheelboatConfig load() {
-        try {
-            Files.createDirectories(PATH.getParent());
-            if (!Files.exists(PATH)) {
-                WheelboatConfig config = new WheelboatConfig();
-                config.configVersion = CURRENT_VERSION;
-                config.save();
-                return config;
-            }
-
-            try (Reader reader = Files.newBufferedReader(PATH)) {
-                WheelboatConfig config = GSON.fromJson(reader, WheelboatConfig.class);
-                if (config == null) {
-                    config = new WheelboatConfig();
-                }
-                boolean migrated = config.migrate();
-                config.sanitize();
-                config.lastModified = Files.getLastModifiedTime(PATH).toMillis();
-                if (migrated) {
-                    config.save();
-                    WheelboatClient.LOGGER.info("Migrated steering wheel configuration to version {}", CURRENT_VERSION);
-                }
-                return config;
-            }
-        } catch (IOException | RuntimeException exception) {
-            WheelboatClient.LOGGER.error("Could not load {}; using defaults", PATH, exception);
-            return new WheelboatConfig();
-        }
+    public static WheelboatConfig current() {
+        return INSTANCE;
     }
 
-    WheelboatConfig reloadIfChanged() {
-        long now = System.currentTimeMillis();
-        if (now < nextReloadCheck) {
-            return this;
-        }
-        nextReloadCheck = now + 1000L;
-
-        try {
-            return Files.getLastModifiedTime(PATH).toMillis() == lastModified ? this : load();
-        } catch (IOException exception) {
-            return this;
-        }
-    }
-
-    public void save() throws IOException {
+    void applyChanges() {
         sanitize();
-        try (Writer writer = Files.newBufferedWriter(PATH)) {
-            GSON.toJson(this, writer);
-        }
-        lastModified = Files.getLastModifiedTime(PATH).toMillis();
+        WheelController.configChanged();
     }
 
     private void sanitize() {
@@ -132,15 +73,6 @@ public final class WheelboatConfig {
         if (forceFeedbackDevice == null) {
             forceFeedbackDevice = "";
         }
-    }
-
-    private boolean migrate() {
-        if (configVersion >= CURRENT_VERSION) {
-            return false;
-        }
-
-        configVersion = CURRENT_VERSION;
-        return true;
     }
 
     MaterialForceFeedback forceFeedbackFor(SurfaceMaterial material) {

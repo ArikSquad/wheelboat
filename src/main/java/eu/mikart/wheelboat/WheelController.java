@@ -13,7 +13,7 @@ public final class WheelController {
     private static final int DEVICE_SCAN_INTERVAL_TICKS = 20;
     private static final WheelController INSTANCE = new WheelController();
 
-    private WheelboatConfig config = WheelboatConfig.load();
+    private final WheelboatConfig config = WheelboatConfig.current();
     private final ForceFeedbackManager forceFeedback = new ForceFeedbackManager();
     private int selectedJoystick = -1;
     private int scanCooldown;
@@ -27,10 +27,6 @@ public final class WheelController {
     private float acceleratorScale = 1.0F;
     private float brakeScale = 1.0F;
     private boolean active;
-
-    public static void initialize() {
-        INSTANCE.reloadConfig();
-    }
 
     public static Input enrichInput(Input keyboardInput) {
         return INSTANCE.applyWheelInput(keyboardInput);
@@ -48,9 +44,12 @@ public final class WheelController {
         return INSTANCE.active ? INSTANCE.brakeScale : 1.0F;
     }
 
+    static void configChanged() {
+        INSTANCE.resetConfiguredDevice();
+    }
+
     private Input applyWheelInput(Input keyboardInput) {
         Minecraft client = Minecraft.getInstance();
-        reloadConfig();
 
         if (!isDrivingBoat(client) || !config.enabled) {
             deactivate();
@@ -107,17 +106,10 @@ public final class WheelController {
         }
     }
 
-    private void reloadConfig() {
-        WheelboatConfig reloaded = config.reloadIfChanged();
-        if (reloaded == config) {
-            return;
-        }
-
-        config = reloaded;
+    private void resetConfiguredDevice() {
         selectedJoystick = -1;
         hasCapturedSteeringCenter = false;
         forceFeedback.close();
-        WheelboatClient.LOGGER.info("Reloaded steering wheel configuration");
     }
 
     private FloatBuffer getAxes() {
